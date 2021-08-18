@@ -1,0 +1,386 @@
+<!doctype html>
+<html>
+	<head lang="es-CO">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<meta name="description" content="una introducción a OWASP ZAP">
+		<meta name="author" content="Rodrigo Castro Díaz">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+		<title>presentación ZAP</title>
+
+		<link rel="shortcut icon" href="/assets/icons/zap.svg" type="image/x-icon">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<script src="https://kit.fontawesome.com/7d25ae1d5e.js" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<img src="/assets/icons/zap.svg" alt="logo de Zap" style="width: 10rem;">
+					<h1>Zed Attack Proxy </h1>
+					<p>(Nivel básico)</p>
+					<p>
+						<small>Sección de Seguridad de la información - Rodrigo Castro Díaz</small>
+					</p>
+				</section>
+				<section>
+					<h4> <i class="fas fa-book"></i> Agenda</h4>
+					<ul>
+						<li>Introducción a ZAP</li>
+						<li>Detalles de configuración</li>
+						<li>Escaneos pasivos y activos</li>
+						<li>Reportes</li>
+					</ul>
+				</section>
+				<section>
+					<section>
+						<h2>¿Qué es ZAP?</h2>
+						<p>
+							Zed Attack Proxy (ZAP) es una herramienta gratuita de pruebas de penetración de código abierto que hace parte del Open Web Application Security Project (OWASP). ZAP está diseñado específicamente para probar aplicaciones web y es flexible y extensible.
+						</p>
+					</section>
+					<section>
+						<p>ZAP es un proxy de estilo hombre en el medio</p>
+						<img src="/assets/images/browser-no-proxy.png" alt="proxy in the middle">
+						<div class="fragment fade-in">
+							<p>Si ya hay otro proxy de red en uso, como en muchos entornos corporativos, ZAP se puede configurar para conectarse a ese proxy.</p>
+							<img src="/assets/images/browser-network-proxy.png" alt="zap en entornos corporativos">
+						</div>
+						<aside class="notes">
+							<p>ZAP es un proxy de uso al estilo hombre en el medio, es decir que ZAP  funciona poniéndose entre el navegador y la aplicación interceptando las peticiones y respuestas de la aplicación web incluso en entornos corporativos</p>
+						</aside>
+					</section>
+				</section>
+				<section>
+					<section>
+						<i class="fas fa-cogs"></i>
+						<br>
+						<h6>Detalles iniciales</h6>
+					</section>
+					<section>
+						<h2>
+							¿Cómo obtener ZAP?
+						</h2>
+						
+						<p class="fragment">ZAP requiere Java 8+ para ejecutarse</p>
+						<div class="fragment">
+							<i class="fab fa-linux "></i>
+							<i class="fab fa-apple"></i>
+							<i class="fab fa-windows"></i>
+							<i class="fab fa-docker"></i>
+						</div>
+						<br>
+						<a href="https://www.zaproxy.org/download/"
+						class="fragment" 
+						target="_blank"
+						rel="noreferrer noopener external">
+							<i class="fas fa-download"></i>
+						</a>
+						<a href="https://www.kali.org/"
+						class="fragment"
+						target="_blank"
+						rel="noreferrer noopener external"
+						>
+						<i class="fas fa-dragon"></i>
+						</a>
+						<aside class="notes">
+							<p>ZAP es una aplicación java, por lo tanto requiere que el sistema operativo tenga instalado java 8 o superior, por lo tanto podemos conseguir instaladores para los principales sistemas operativos e incluso en Docker</p>
+							<p>También viene incluida en diversas distribuciones de pentesting y seguridad informática como Kali Linux o Backbox</p>
+						</aside>
+					</section>
+					<section>
+						<h6>Antes de usar</h6>
+						<i class="fas fa-street-view"></i>
+						<p>¿De qué manera voy a usar ZAP?¿Cómo proxy local, cómo servidor de pruebas?</p>
+						<aside class="notes">
+							<p>Debemos definir el uso que haremos de la herramienta para poder aprovechar al máximo sus capacidades, es posible que solo pensemos en probar la herramienta o realizar una prueba básica, en este caso las opciones y configuraciones por defecto serán más que suficientes</p>
+						</aside>
+					</section>
+					<section>
+						<h6>Ajustes de la JVM antes de lanzar ZAP</h6>
+						<i class="fab fa-java"></i>
+						<br>
+						<ul><li>Ajustes de heap </li></ul>
+						<pre><code data-trim data-line-numbers="1"><script type="text/template">
+							-Xmx1024m
+						</script></code></pre>
+						<a href="https://www.zaproxy.org/docs/desktop/ui/dialogs/options/jvm/"
+						target="_blank"
+						rel="noreferrer noopener external">
+							<i class="fas fa-file-alt"></i>
+							JVM options
+						</a>
+						<aside class="notes">
+							<p>Para sacarle el máximo provecho se permite establecer el tamaño máximo del grupo de asignación de memoria de Java para la ejecución de ZAP.</p>
+							<p>El heap es una estructura de datos especial de la JVM y es critica para las aplicaciones porque cuando se desborda el heap la aplicación falla, por defecto estos valores suelen ser pequeños, y dependiendo del uso que le demos puede ser necesario personalizar los valores.</p>
+							<p>Dependiendo del sistema operativo, esta configuración puede variar, por lo que es aconsejable consultar la documentación oficial</p>
+						</aside>
+					</section>
+					<section>
+						<i class="fab fa-java"></i>
+						<br>
+						<ul><li>Garbage Collector</li></ul>
+						<pre><code data-trim ><script type="text/template">
+							-XX:+UseSerialGC
+							-XX:+UseParallelGC
+							-XX:+UseConcMarkSweepGC (en des uso desde java 9)
+							-XX:+UseG1GC
+							-XX:+UseZGC (java 11)
+						</script></code></pre>
+						<aside class="notes">
+							<p>Seleccionar correctamente el Garbage Collector dependiendo de la versión de JVM también impacta al funcionamiento de la herramienta</p>
+							<p>El Garbage Collector (o recolector de basura) es uno de los elementos fundamentales en la JVM se encarga de recolectar aquellos elementos que ya no son usados dentro del programa, es una procedimiento que se ejecuta de manera automática.</p>
+							<p>El algoritmo que escojamos dependerá del equipo. Si se tiene alguna restricción a nivel de hardware probablemente los primeros (serial y parallel) serán los más indicados, si la maquina es potente y la el uso de la aplicación lo requiere es posible que la mejor opción sea usar los últimos (G1 o ZGC), en la versión 11 el recomendable es usar ZGC.</p>
+						</aside>
+					</section>
+					<section>
+						<h6>configurar proxy</h6>
+						<i class="fab fa-firefox-browser"></i>
+						<i class="fab fa-chrome"></i>
+						<i class="fab fa-opera"></i>
+						<p>Por defecto, ZAP usa la dirección de 'localhost' y el puerto '8080', pero estos se pueden cambiar </p>
+						<a href="https://www.zaproxy.org/docs/desktop/start/proxies/"
+						translate="_blank"
+						rel="noreferrer noopener external">
+						<i class="fas fa-file-alt"></i>
+						Configuring proxies
+						</a>
+						<aside class="notes">
+							Generalmente no hay problema pero en algunos navegadores actuales para Windows, se requiere de algunas configuraciones adicionales para permitir la captura del trafico de localhost. 
+						</aside>
+					</section>
+				</section>
+				<section>
+					<Section>
+						<h6>Primeros pasos con ZAP</h6>
+						<img src="/assets/images/inicio_sesion.png" alt="Ventana inicio de sesión">
+						<aside class="notes">
+							<p>Cuando inicia ZAP, preguntará si desea mantener la sesión. De forma predeterminada, las sesiones se graban en el disco en una base de datos HSQLDB con un nombre y una ubicación predeterminados. Si no se desea permanecer en la sesión, esos archivos se eliminan cuando sale de ZAP. </p>
+						</aside>
+					</Section>
+					<section>
+						<img src="/assets/images/Actualizar-complementos.png" alt="Actualización de inicio">
+						<aside class="notes">
+							<p>Cuando inicia ZAP por primera vez, mostrara una ventana para la actualización de los componentes de la aplicación, se recomienda actualizar todos.</p>
+							<p>Tip: En esta ventana podemos ir a la pestaña de mercado para instalar complementos adicionales y expandir funcionalidades de la herramienta</p>
+						</aside>
+					</section>
+					<section>
+						<h6>Addons</h6>
+						<ul>
+							<li>Python Scripting y/o Ruby Scripting</li>
+							<li>Tree Tools</li>
+							<li>Community Scripts</li>
+							<li>CustomReport</li>
+							<li>Export Report</li>
+							<li>Requester</li>
+						</ul>
+						<aside class="notes">
+							<p>Estos son algunos de los complementos adicionales que podemos instalar cuya descripción encontraremos en la ventada de la aplicación</p>
+						</aside>
+					</section>
+					<section>
+						<h6>interfaz de usuario</h6>
+						<img src="/assets/images/ui-zap.png" alt="Interfaz de usuario de ZAP">
+						<aside class="notes">
+							<p>
+								La interfaz de usuario de ZAP se compone de los siguientes elementos:
+							</p>
+							<ol>
+								<li> <strong>Menú:</strong> brinda acceso a muchas de las herramientas automáticas y manuales.</li>
+								<li><strong>Barra de herramientas:</strong> incluye botones que facilitan el acceso a las funciones más utilizadas.</li>
+								<li><strong>Ventana de árbol:</strong> muestra el árbol de Sitios y el árbol de Scripts.</li>
+								<li><strong>Ventana del área de trabajo:</strong> muestra solicitudes, respuestas y scripts y le permite editarlos.</li>
+								<li><strong>Ventana de información:</strong> muestra detalles de las herramientas automáticas y manuales.</li>
+								<li><strong>Pie de página:</strong> muestra un resumen de las alertas encontradas y el estado de las principales herramientas automatizadas.</li>
+							</ol> 
+						</aside>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h6>Escaneo automatizado</h6>
+						<img src="/assets/images/automated-scan.png" alt="Escaneo automatizado">
+						<aside class="notes">
+							<p>Para ejecutar un escaneo automatizado de inicio rápido:
+								<ol>
+									<li>Inicie ZAP y haga clic en la pestaña <strong>Inicio rápido</strong> de la ventana del área de trabajo.</li>
+									<li>Haga clic en el botón grande de <strong>Escaneo automatizado</strong>.</li>
+									<li>En el cuadro de texto de <strong>URL para atacar</strong>, ingrese la URL completa de la aplicación web que desea atacar.</li>
+									<li>Haga clic en el botón de <strong>ataque</strong></li>
+								</ol>
+							</p>
+							<p>ZAP procederá a analizar la aplicación web y realizara un escaneo pasivo con un spider tradicional. Luego, ZAP utilizará el escáner activo para atacar todas las páginas, funcionalidades y parámetros descubiertos.</p>
+							<p>ZAP proporciona 2 spiders para rastrear aplicaciones web, puede usar una o ambas desde esta pantalla.</p>
+							<p>El spider tradicional de ZAP descubre enlaces examinando el HTML en las respuestas de la aplicación web. Es rápida, pero no siempre es efectiva cuando se explora una aplicación web AJAX que genera enlaces usando JavaScript.</p>
+							<p>Para las aplicaciones AJAX, es probable que el spider AJAX de ZAP sea más eficaz. Es más lenta que el spider tradicional.</p>
+							<p>ZAP primero escaneará pasivamente todas las solicitudes y respuestas enviadas a través de él, luego se realiza un análisis activo que intenta encontrar otras vulnerabilidades mediante ataques conocidos.</p>
+							</aside>
+					</section>
+					<section>
+						<h6>Alertas</h6>
+						<img src="/assets/images/alertas.png" alt="Alertas">
+						<aside class="notes">
+							<p>
+								Para ver las alertas creadas durante su prueba:
+								<ol>
+									<li>Haga clic en la pestaña Alertas en la ventana de información.</li>
+									<li>Haga clic en cada alerta que se muestra en esa ventana para mostrar la URL y la vulnerabilidad detectada en el lado derecho de la Ventana de información.</li>
+									<li>En las ventanas del área de trabajo, haga clic en la pestaña Respuesta para ver el contenido del encabezado y el cuerpo de la respuesta. Se resaltará la parte de la respuesta que generó la alerta.</li>
+								</ol>
+							</p>
+						</aside>
+					</section>
+					<section>
+						<h6>Exploración manual</h6>
+						<img src="/assets/images/manual-explore.png" alt="Exploración manual">
+						<aside class="notes">
+							<p>Para explorar manualmente una aplicación:
+								<ol>
+									<li>Inicie ZAP y haga clic en la pestaña Inicio rápido de la ventana del área de trabajo.</li>
+									<li>Haga clic en el botón grande Exploración manual.</li>
+									<li>En el cuadro de texto URL para explorar, ingrese la URL completa de la aplicación web que desea explorar.</li>
+									<li>Seleccione el navegador que le gustaría usar</li>
+									<li>Haga clic en Iniciar navegador</li>
+								</ol>
+							</p>
+						</aside>
+					</section>
+					<section>
+						<h6>ZAP HUD</h6>
+						<img src="/assets/images/hud.png" alt="HUD, escaneo manual">
+						<aside class="notes">
+							<p>El Heads Up Display (HUD) es una nueva interfaz que brinda acceso a la funcionalidad ZAP directamente en el navegador. Es ideal para personas nuevas en la seguridad web y también permite que los probadores de penetración experimentados se centren en la funcionalidad de una aplicación.</p>
+						</aside>
+					</section>
+				</section>
+				<section>
+					<h6>Reporte</h6>
+					<img src="/assets/images/reporte.png" alt="Reporte generado por ZAP">
+					<aside class="notes">
+						<p>Para generar un reporte:
+							<ol>
+								<li>Abrir el menú Reporte</li>
+								<li>Escoger el tipo de informe a generar</li>
+							</ol>
+						</p>
+						<p>Las opciones que maneja este menú son:
+
+						<ul>
+							<li>
+								<strong>Generar informe HTML: </strong>genera un nuevo informe HTML que contiene las alertas generadas.
+							</li>
+							<li>
+								<strong>Generar informe XML:</strong> genera un nuevo informe XML que contiene las alertas generadas.
+							</li>
+							<li>
+								<strong>Generar informe Markdown:</strong> genera un nuevo informe de Markdown que contiene las alertas generadas.
+							</li>
+							<li>
+								<strong>Exportar mensajes a archivo:</strong> permite guardar solicitudes y respuestas en un archivo de texto.
+								Seleccione los mensajes para guardar en la pestaña Historial; use la tecla Mayús para seleccionar varios mensajes.
+							</li>
+							<li>
+								<strong>Exportar respuesta a archivo:</strong> Esto le permite guardar una respuesta específica en un archivo.
+								Seleccione el mensaje relevante en la pestaña Historial; tenga en cuenta que las respuestas binarias (como imágenes) se pueden guardar, así como las respuestas de prueba. 
+							</li>
+							<li>
+								<strong>Exportar todas las URL a archivo:</strong> Esto le permite guardar todas las URL a las que se accede en un archivo de texto o HTML.
+								Esto se puede utilizar, entre otras cosas, para comparar las URL disponibles para usuarios con diferentes roles o permisos en el mismo sistema.
+							</li>
+							<li>
+								<strong>Exportar las URL seleccionadas a un archivo:</strong> Según la selección (incluida la selección múltiple) en el árbol de Sitios, se exportan todas las URL y las URL secundarias de los nodos seleccionados.
+							</li>
+							<li>
+								<strong>Exportar URL para contexto:</strong> Se exportan todas las URL del árbol Sitios que se encuentran dentro del contexto seleccionado. Esta funcionalidad también está disponible en el menú contextual cuando se usa en un nodo Contexto en el panel del árbol Sitios.
+							</li>
+							<li>
+								<strong>Comparar con otra sesión:</strong> Esto le solicita una sesión ZAP que haya guardado previamente.
+								Luego le solicita un archivo de salida en el que se escriben todas las URL a las que accede la sesión actual y la sesión que ha seleccionado para compararla.
+								El archivo contendrá una tabla que enumera las URL y las respuestas HTTP para las URL en las 2 sesiones.
+								Los botones de JavaScript le permiten mostrar todas las URL, solo aquellas a las que se accede en la primera sesión, la segunda sesión y aquellas a las que se accede por ambas sesiones.
+								Esto es particularmente útil para comparar 2 sesiones que acceden a la misma aplicación utilizando diferentes usuarios. Podrá ver qué URL son visibles para los usuarios y podrá intentar acceder a todas las URL cuando inicie sesión como cualquiera de los usuarios.
+							</li>
+						</ul>
+					</p>
+					</aside>
+				</section>
+				<section>
+					<section>
+						<h6>Recursos</h6>
+						<ul>
+							<li>
+								<a href="https://www.zaproxy.org/"
+								target="_blank"
+								rel="noreferrer noopener external">
+								<i class="fab fa-firefox-browser"></i>
+								Sitio oficial
+								</a>
+							</li>
+							<li>
+								<a href="https://www.zaproxy.org/docs/"
+								target="_blank"
+								rel="noreferrer noopener external">
+								<i class="far fa-file-alt"></i>
+								Documentación oficial
+								</a>
+							</li>
+							<li>
+								<a href="https://www.youtube.com/c/OWASPLATAM/featured"
+								target="_blank"
+								rel="noreferrer noopener external">
+								<i class="fab fa-youtube"></i> OWASP Latam
+								</a>
+							</li>
+						</ul>
+					</section>
+					<section>
+						<h6>Descarga esta presentación en formato PDF</h6>
+						<a href="/assets/docs/ZAP.pdf"
+						target="blank"><i class="far fa-file-pdf"></i></a>
+					</section>
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+				controlsTutorial: true,
+				controls: true,
+				controlsLayout: 'bottom-right',
+				controlsBackArrows: 'faded',
+				progress: true,
+				slideNumber: 'h.v',
+				showSlideNumber: 'print',
+				transition: 'slide',
+				transitionSpeed: 'default',
+				backgroundTransition: 'fade',
+				showNotes: false,
+				pdfSeparateFragments: false,
+				pdfMaxPagesPerSlide: 1,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
